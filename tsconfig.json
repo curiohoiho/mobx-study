@@ -1,0 +1,17 @@
+{
+    "version": "1.7.5",
+    "compilerOptions": {
+        "target": "es5",
+        "outDir": "lib",
+        "sourceMap": false,
+        "declaration": true,
+        "module": "commonjs",
+        "removeComments": false
+    },
+    "exclude": [
+        "node_modules",
+        "test",
+        "lib",
+        ".build"
+    ]
+}
