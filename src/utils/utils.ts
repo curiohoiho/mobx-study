@@ -20,6 +20,11 @@ export function getNextId()
 } // getNextId()
 
 
+/**
+ * "invariant" : never changing, 
+ * "a function, quantity, or property that remains unchanged when a specified transformation is applied."
+ * Is it almost like an "assert", and throws an error
+ */
 export function invariant(check: boolean, message: string, thing? : any) : void
 {
   if (!check)
