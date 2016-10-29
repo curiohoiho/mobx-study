@@ -108,3 +108,156 @@ export function addObserver(a_observable: IObservable, a_node: IDerivation)
   }  
 
 } // addObserver()
+
+
+/**
+ * must remove from 2 places: the _observersIndexes map and the _observers list.
+ * uses a "filler" to remove from the list, and to overwrite the map index.
+ */
+export function removeObserver(a_observable: IObservable, a_node: IDerivation)
+{
+  if (a_observable.observers.length === 1)
+  {
+    // deleting last observer
+    a_observable.observers.length = 0;
+
+    queueForUnobservation(a_observable);
+  }
+  else // more than 1 observable 
+  {
+    // deleting from _observersIndexes is straight forward; 
+    // to delete from _observers, let's swap 'a_node' with last element
+    // must delete from 2 places: _observersIndexes and _observers.
+    const lst_observers = a_observable.observers;
+    const map_observers_indexes = a_observable.observersIndexes;
+    
+    // get last element, which should fill the place of `node`, so the array doesnt have holes
+    const filler = lst_observers.pop();
+
+    // otherwise node was the last element, which already got removed from array
+    if (filler !== a_node)
+    {
+      // getting index of `node`. this is the only place we actually use map.
+      const index = map_observers_indexes[a_node.__mapid] || 0;
+      // map store all indexes but 0, see comment in `addObserver`
+      if (index)
+      {
+        map_observers_indexes[filler.__mapid] = index;
+      }
+      else 
+      {
+        delete map_observers_indexes[a_node.__mapid];
+      } // inner, inner if else (index on the map exists)
+      
+      lst_observers[index] = filler;
+
+    } // inner if (filler !== a_node)
+
+    delete map_observers_indexes[a_node.__mapid];
+
+  } // outer if..else (observable.observers.length === 1)
+
+} // removeObserver()
+
+
+/**
+ * place this observable on the globalstate.pendingUnObservations
+ */
+export function queueForUnobservation(a_observable: IObservable)
+{
+  if (!a_observable.isPendingUnobservation)
+  {
+    a_observable.isPendingUnobservation = true;
+    globalState.pendingUnObserservations.push(a_observable);
+  }
+
+} // queueForUnobservation()
+
+
+/**
+ * Batch is a pseudo-transaction, just for purpose of memoizing ComputedValues
+ * when nothing else does.
+ * During a batch, `onBecomeUnobserved` will be called at most once per observable.
+ * Avoids unnecessary recalculations. 
+ */
+export function startBatch()
+{
+    globalState.inBatch++;
+}
+
+
+/**
+ * From the globalstate, get all the pending unobservations.
+ * Then set the observable's `isPendingUnobservation` to false,
+ * and clear out the globalState's `pendingUnObserservations`.
+ */
+export function endBatch()
+{
+  if (globalState.inBatch === 1)
+  {
+    // the batch is actually about to finish, all unobserving should happen here
+    const lst_pending_unobservations = globalState.pendingUnObserservations;
+
+    for (let i = 0; i < lst_pending_unobservations.length; i++)
+    {
+      const observable = lst_pending_unobservations[i];
+      observable.isPendingUnobservation = false;
+
+      if (observable.observers.length === 0)
+      {
+        observable.onBecomeUnobserved();
+        // NOTE: onBecomeUnobserved might push to `pendingObservations`
+        // but does the line below clear those out anyway?
+      }
+    } // for lst_pending_unobservations
+
+    globalState.pendingUnObserservations = [];
+
+  } // if (globalState.inBatch === 1)
+
+  globalState.inBatch--;
+
+} // endBatch()
+
+
+/**
+ * 1. get the current tracking derivation from the globalState.
+ * 2. use the derivation's runId to see if this derivation already accessed this observable.
+ * 3. If not, add this derivation's runId to the observable's `lastAccessedBy`.
+ * 4. Otherwise, `queueForUnobservation`.
+ */
+export function reportObserved(a_observable: IObservable)
+{
+  const derivation = globalState.trackingDerivation;
+
+  if (derivation !== null)
+  {
+    /**
+     * Simple optimization, give each derivation a unique id (runId).
+     * Check if the last time this observable was accessed, the same runId was used.
+     * If this is the case, the relation is already known.
+     */
+    if (derivation.runId !== a_observable.lastAccessedBy)
+    {
+      a_observable.lastAccessedBy = derivation.runId;
+      // @todo: so what does it mean to be unbound in this derivation's context?
+      derivation.newObserving[derivation.unboundDepsCount++] = a_observable;
+    } // inner if 
+  }
+  else if (a_observable.observers.length === 0)
+  {
+    queueForUnobservation(a_observable);
+  } // outer if..else if 
+
+} // reportObserved()
+
+
+/**
+ * This is expensive, so better not to run it in production.
+ * But it's temporarily helpful for testing.
+ */
+function invariantLOS(a_observable: IObservable, msg: string)
+{
+  
+
+} // invariantLOS()
