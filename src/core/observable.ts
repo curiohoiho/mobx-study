@@ -46,6 +46,10 @@ export function hasObservers(a_observable: IObservable): boolean
 } // hasObservers()
 
 
+/**
+ * Simply returns the list of observers (IDerivation[])
+ * for the passed in IObservable.
+ */
 export function getObservers(a_observable: IObservable) : IDerivation[]
 {
   return a_observable.observers;
@@ -255,9 +259,123 @@ export function reportObserved(a_observable: IObservable)
 /**
  * This is expensive, so better not to run it in production.
  * But it's temporarily helpful for testing.
+ * LOS = lowestObserverState
  */
-function invariantLOS(a_observable: IObservable, msg: string)
+function invariantLOS(a_observable: IObservable, a_s_msg: string)
 {
-  
+  const min = getObservers(a_observable).reduce(
+    (accum_val, current_val) => Math.min(accum_val, current_val.dependenciesState),
+    2 // initial val 
+  );
+
+  // the only assumption about `lowestObserverState`
+  if (min >= a_observable.lowestObserverState)
+  {
+    return;
+  }
+
+  throw new Error(
+    "lowestObserverState is wrong for " + a_s_msg + " because " 
+    + min + " < " + a_observable.lowestObserverState
+  );
 
 } // invariantLOS()
+
+
+
+/**
+ * NOTE: current propogation mechanism will in case of self re-running autoruns 
+ * behave unexpectedly.
+ * It will propgate changes to observers from previous run.
+ * It's hard, or maybe impossible (with reasonable perf) to get it right with the
+ * current approach.
+ * Hopefully self re-running autoruns aren't a feature people should depend on.
+ * Also, most basic use cases should be ok.
+ * @todo: create description of autorun behavior or change this behavior?
+ * 
+ * Called by Atom when it's value changes, 
+ * go through the list of observers and set their IDerivationState's
+ * to STALE: 
+ */
+export function propagateChanged(a_observable: IObservable): void
+{
+  if (a_observable.lowestObserverState = IDerivationState.STALE) return;
+  a_observable.lowestObserverState = IDerivationState.STALE;
+
+  const lst_observers = a_observable.observers;
+  let num_of_observers = lst_observers.length;
+
+  while (num_of_observers--)
+  {
+    // get each individual observer, also known as an IDerivation 
+    const d: IDerivation = lst_observers[num_of_observers];
+    if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    {
+      d.onBecomeStale();
+    }
+    d.dependenciesState = IDerivationState.STALE;
+
+  } // while 
+
+} // propagateChanged()
+
+
+/**
+ * Called by ComputedValue when it recalculates and it's value changed.
+ */
+export function propagateChangeConfirmed(a_observable: IObservable): void
+{
+  if (a_observable.lowestObserverState === IDerivationState.STALE) return;
+  a_observable.lowestObserverState = IDerivationState.STALE;
+
+  const lst_observers = a_observable.observers;
+  let num_of_observers = lst_observers.length;
+
+  while (num_of_observers--)
+  {
+    const d: IDerivation = lst_observers[num_of_observers];
+    // get the observer from the list.  What is its dependenciesState?
+    // if POSSIBLY_STALE, then make it STALE.
+    // if UP_TO_DATE, then set the observables lowestObserverState to UP_TO_DATE.
+    if (d.dependenciesState === IDerivationState.POSSIBLY_STALE)
+    {
+      d.dependenciesState = IDerivationState.STALE;
+    }
+    // this happens during computing of `d`, just keep lowestObserverState up to date.
+    else if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    {
+      a_observable.lowestObserverState = IDerivationState.UP_TO_DATE;
+    } // if..else if 
+
+  } // while 
+
+} // propagateChangeConfirmed()
+
+
+/**
+ * Used by computed when it's dependency changed, 
+ * but we don't want to immediately recompute.
+ */
+export function propagateMaybeChanged(a_observable: IObservable): void
+{
+  if (a_observable.lowestObserverState !== IDerivationState.UP_TO_DATE)
+    return;
+
+  // if UP_TO_DATE, reset the lowestObserverState on the observable 
+  // to POSSIBLY_STALE, and then do the same to all its observers 
+  a_observable.lowestObserverState = IDerivationState.POSSIBLY_STALE;
+
+  const lst_observers = a_observable.observers;
+  let num_of_observers = lst_observers.length;
+  while (num_of_observers--)
+  {
+    const d = lst_observers[num_of_observers];
+    if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    {
+      d.dependenciesState = IDerivationState.POSSIBLY_STALE;
+      d.onBecomeStale();
+    }
+
+  } // while 
+
+} // propagateMaybeChanged()
