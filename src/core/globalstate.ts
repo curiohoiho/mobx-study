@@ -9,7 +9,7 @@ declare const global: any;
 /**
  * These values will persist if global state is reset
  */
-const persistentKeys = ["mobxGuid", "resetId", "spyListeners", "strictMode", "runId"];
+const ay_s_persistentKeys = ["mobxGuid", "resetId", "spyListeners", "strictMode", "runId"];
 
 
 export class MobxGlobals
@@ -91,5 +91,55 @@ export class MobxGlobals
 
 } // class MobxGlobals
 
-export let globalState: MobxGlobals = new MobxGlobals();
+
+/**
+ * Get the globalState object 
+ */
+export const globalState: MobxGlobals = ( () => {
+
+  const res = new MobxGlobals();
+
+  /**
+   * Backward compatibility check
+   */
+  if (global.__mobservableTrackingStack || global.__mobservableViewStack)
+    throw new Error("[mobx] An incompatible version of mobservable is already loaded.");
+  
+  if (global.__mobxGlobal && global.__mobxGlobal.version !== res.version)
+    throw new Error("[mobx] An incompatible version of mobx is already loaded.");
+  
+  if (global.__mobxGlobal)
+    return global.__mobxGlobal;
+  
+  return global.__mobxGlobal = res;
+
+})(); // globalState -- we call it immediately, right here 
+
+
+export function registerGlobals()
+{
+  // no-op to make explicit why this file is loaded
+}
+
+
+/**
+ * For testing purposes only; this will break the internal state of existing observables,
+ * but can be used to ** get back at a stable state after throwing errors **.
+ */
+export function resetGlobalState()
+{
+  globalState.resetId++;
+  const defaultGlobals = new MobxGlobals();
+
+  for (let key in defaultGlobals)
+  {
+    // if this property in defaultGlobals does not exist in ay_s_persistentKeys,
+    // add this key to the globalState, with a default value.
+    if (ay_s_persistentKeys.indexOf(key) === -1)
+      globalState[key] = defaultGlobals[key];
+  } // for 
+
+  globalState.allowStateChanges = !globalState.strictMode;
+
+} // resetGlobalState()
 

@@ -35,16 +35,16 @@ export function invariant(check: boolean, message: string, thing? : any) : void
 } // invariant()
 
 
-const deprecatedMessages = [];
+const lst_deprecatedMessages: string[] = [];
 export function deprecated(msg: string) : void 
 {
   // if the msg already exists in the array
-  if (deprecatedMessages.indexOf(msg) !== -1)
+  if (lst_deprecatedMessages.indexOf(msg) !== -1)
   {
     return;
   }
 
-  deprecatedMessages.push(msg);
+  lst_deprecatedMessages.push(msg);
   console.error("[mobx] Deprecated: " + msg);
 
 } // deprecated()
@@ -53,7 +53,7 @@ export function deprecated(msg: string) : void
 /**
  * Makes sure that the provided function is invoked at most once.
  */
-export function once(func: Lambda): Lambda
+export function once(func: ILambda): ILambda
 {
   let invoked = false;
 
