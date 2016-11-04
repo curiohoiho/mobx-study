@@ -1,4 +1,9 @@
-﻿import { IDepTreeNode, IObservable } from './observable';
+﻿import { IDepTreeNode, IObservable, addObserver, removeObserver, endBatch } from './observable';
+import { globalState, resetGlobalState } from './globalstate';
+import { invariant } from '../utils/utils';
+import { isSpyEnabled, spyReport } from './spy';
+import { isComputedValue } from './computedvalue';
+
 
 export enum IDerivationState
 {
