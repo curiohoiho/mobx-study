@@ -1,42 +1,50 @@
-# Notes on the porting of the '/ts' folder
+# Notes on the porting of the '/src/utils' folder
 
 current file working on: utils.ts
 
 current status of porting this folder: just starting 
 
-most recent sync from original: commit 7a51700 Dec 15, 2016
+most recent sync from original: Dec 15, 2016
 previous sync:
 
 
 #  This first list shows source files ported, listed in order ported, as there are dependencies among them:
 
-- utils.ts - 
-a few words here 
-  
+- utils.ts - completed 
 
-- dom.spec.js - not ported, as there isn't really anything there now
+- decorators.ts - started
+
+- iterable.ts 
+
+-  simpleeventemitter.ts 
+
 
 
 # This 2nd list gives notes on all the files, listed alphabetically by file:
 
-## utils.ts - 0% complete
+## utils.ts - 100% complete
 - check the to-dos
 
 Dependencies:
 
+/core/globalstate.ts
+
+
 Circular dependencies: 
 
-- ./GridOptionsWrapper
-- ./entities/column
-- ./entities/rowNode
+- /types/observablearray.ts 
 
 
 Waiting on:
 
+/core/globalstate.ts
+/types/observablearray.ts
+
+
 
 # to-dos & notes
 
-1. check the todo's in index.ts - nothing major right now.
+1. 
 
 
 

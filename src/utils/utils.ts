@@ -31,7 +31,6 @@ export function invariant(check: boolean, message: string, thing? : any) : void
   {
     throw new Error("[mobx] Invariant failed: " + message + (thing ? ` in '${thing}'` :  ""));
   }
-
 } // invariant()
 
 
@@ -159,13 +158,13 @@ export function valueDidChange(
 } // valueDidChange()
 
 
-const prototypeHasOwnPropery = Object.prototype.hasOwnProperty;
+const prototypeHasOwnProperty = Object.prototype.hasOwnProperty;
 /** if the propName is directly on the object, not on the prototype chain. */
 export function hasOwnProperty(
   object: Object, 
   propName: string): boolean
 {
-  return prototypeHasOwnPropery.call(object, propName);
+  return prototypeHasOwnProperty.call(object, propName);
 }
 
 
@@ -353,3 +352,12 @@ export function createInstanceofPredicate<T>(
   } as any;
 
 } // createInstanceofPredicate()
+
+
+/**
+ * Returns whether the argument is an array, disregarding obervability.
+ */
+export function isArrayLike(a: any): boolean
+{
+  return Array.isArray(a) || isObservableArray(a);
+}

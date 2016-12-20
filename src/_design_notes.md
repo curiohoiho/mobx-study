@@ -1,10 +1,10 @@
-# Notes on the porting of the '/ts' folder
+# Notes on the porting of the '/src' folder
 
-current file working on: utils.ts
+current file working on: mobx.ts
 
 current status of porting this folder: just starting 
 
-most recent sync from original: commit 7a51700 Dec 15, 2016
+most recent sync from original: Dec 15, 2016
 previous sync:
 
 
@@ -13,8 +13,6 @@ previous sync:
 - utils.ts - 
 a few words here 
   
-
-- dom.spec.js - not ported, as there isn't really anything there now
 
 
 # This 2nd list gives notes on all the files, listed alphabetically by file:
@@ -26,9 +24,7 @@ Dependencies:
 
 Circular dependencies: 
 
-- ./GridOptionsWrapper
-- ./entities/column
-- ./entities/rowNode
+- ??
 
 
 Waiting on:
@@ -36,7 +32,7 @@ Waiting on:
 
 # to-dos & notes
 
-1. check the todo's in index.ts - nothing major right now.
+1. 
 
 
 
