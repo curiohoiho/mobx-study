@@ -7,7 +7,8 @@ declare var Symbol;
 
 function iteratorSymbol() : string 
 {
-  return (typeof Symbol === "function" && Symbol.iterator) || "@@iterator"; // @todo: return value isn't clear: bool and string?
+  // @todo: return value isn't clear: bool and string?
+  return (typeof Symbol === "function" && Symbol.iterator) || "@@iterator"; 
 }
 
 
@@ -28,7 +29,8 @@ export interface Iterator<T>
 export function arrayAsIterator<T>(a_array: T[]): T[] & Iterator<T>
 {
   // mw: TODO: this should be removed in the next major version of MobX
-	// returning an array for entries(), values() etc for maps was a mis-interpretation of the specs..
+	// returning an array for entries(), values() etc for maps was a 
+  // mis-interpretation of the specs..
 
   invariant(a_array[IS_ITERATING_MARKER] !== true, "Illegal state: cannot recycle array as iterator");
   addHiddenFinalProp(a_array, IS_ITERATING_MARKER, true);

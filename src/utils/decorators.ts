@@ -147,7 +147,7 @@ export function createClassPropertyDecorator(
 
 
 function typescriptInitializeProperty(
-  a_instance,
+  a_instance: any,
   a_s_key: string,
   a_v: any,
   a_onInitialize,

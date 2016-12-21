@@ -12,11 +12,11 @@ previous sync:
 
 - utils.ts - completed 
 
-- decorators.ts - started
+- decorators.ts - completed
 
-- iterable.ts 
+- iterable.ts - completed, and partially deprecated
 
--  simpleeventemitter.ts 
+-  simpleeventemitter.ts  - completed, and deprecated
 
 
 
