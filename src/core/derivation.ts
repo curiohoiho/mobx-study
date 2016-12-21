@@ -1,7 +1,16 @@
-﻿import { IDepTreeNode, IObservable, addObserver, removeObserver, endBatch } from './observable';
-import { globalState, resetGlobalState } from './globalstate';
+﻿import { 
+  IDepTreeNode, 
+  IObservable, 
+  addObserver, 
+  removeObserver, 
+  endBatch } from './observable';
+import { 
+  globalState, 
+  resetGlobalState } from './globalstate';
 import { invariant } from '../utils/utils';
-import { isSpyEnabled, spyReport } from './spy';
+import { 
+  isSpyEnabled, 
+  spyReport } from './spy';
 import { isComputedValue } from './computedvalue';
 
 

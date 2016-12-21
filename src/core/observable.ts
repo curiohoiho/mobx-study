@@ -12,7 +12,8 @@ export interface IDepTreeNode
 } // IDepTreeNode
 
 
-export interface IObservable extends IDepTreeNode // could itself be observing other observables
+// could itself be observing other observables
+export interface IObservable extends IDepTreeNode 
 {
   diffValue: number;
 
@@ -20,6 +21,7 @@ export interface IObservable extends IDepTreeNode // could itself be observing o
    * Id of the derivation *run* that last accessed this observable.
    * If this id equals the *run* id of the current derivation,
    * the dependency is already established.
+   * Derivation: establish who is dependent upon whom
    */  
   lastAccessedBy: number;
 
@@ -39,7 +41,9 @@ export interface IObservable extends IDepTreeNode // could itself be observing o
 
 } // IObservable
 
-
+/**
+ * checks if IObservable.observers.length is > 0
+ */
 export function hasObservers(a_observable: IObservable): boolean
 {
   return a_observable.observers && a_observable.observers.length > 0;
@@ -57,8 +61,10 @@ export function getObservers(a_observable: IObservable) : IDerivation[]
 } // getObservers()
 
 /**
- * (a) gets the (1) observers held by the observable, and the (2) indexes of those observers,
- * and then (3) for each of these indexes, checks that [??] it does not map the
+ * (a) gets the 
+ * (1) observers held by the observable, and the 
+ * (2) indexes of those observers, and then 
+ * (3) for each of these indexes, checks that [??] it does not map the
  * derivation__mapid to the index in the list. 
  */
 function invariantObservers(a_observable: IObservable) : void
@@ -72,6 +78,7 @@ function invariantObservers(a_observable: IObservable) : void
   {
     // @todo: what exactly is the __mapid?  
     // maps derivation__mapid to observers.indexOf(derivation) (see removeObserver)
+    // IDerivation.__mapid
     const map_id = lst_observers[i].__mapid; 
     if (i)
     {
