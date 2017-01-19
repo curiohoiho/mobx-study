@@ -4,13 +4,13 @@ current file working on: utils.ts
 
 current status of porting this folder: just starting 
 
-most recent sync from original: Dec 15, 2016
+most recent sync from original: Jan 17, 2017, version 3.0
 previous sync:
 
 
 #  This first list shows source files ported, listed in order ported, as there are dependencies among them:
 
-- utils.ts - completed 
+- utils.ts - 98% completed, just one import statement left
 
 - decorators.ts - completed
 
@@ -22,7 +22,7 @@ previous sync:
 
 # This 2nd list gives notes on all the files, listed alphabetically by file:
 
-## utils.ts - 100% complete
+## utils.ts - 98% complete
 - check the to-dos
 
 Dependencies:

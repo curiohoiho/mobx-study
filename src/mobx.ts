@@ -16,23 +16,22 @@
  *
  */
 
-//import {registerGlobals} from "./core/globalstate";
-//registerGlobals();
+import {registerGlobals} from "./core/globalstate";
+registerGlobals();
 
 //export { IAtom, Atom, BaseAtom                                } from "./core/atom";
-//export { IObservable, IDepTreeNode                            } from "./core/observable";
-//export { Reaction, IReactionPublic                            } from "./core/reaction";
-//export { IDerivation, untracked, IDerivationState             } from "./core/derivation";
+export { IObservable, IDepTreeNode                            } from "./core/observable";
+//export { Reaction, IReactionPublic, IReactionDisposer       } from "./core/reaction";
+export { IDerivation, untracked, IDerivationState             } from "./core/derivation";
 //export { useStrict, isStrictModeEnabled                       } from "./core/action";
 //export { spy                                                  } from "./core/spy";
-//export { transaction                                          } from "./core/transaction";
 //export { IComputedValue                                       } from "./core/computedvalue";
 
-//export { asReference, asFlat, asStructure, asMap              } from "./types/modifiers";
+//export { asReference, asFlat, asStructure, asMap              } from "./types/modifiers-old";
+//export { IModifierDescriptor, IEnhancer, isModifierDescriptor } from "./types/modifiers";
 //export { IInterceptable, IInterceptor                         } from "./types/intercept-utils";
 //export { IListenable                                          } from "./types/listen-utils";
 //export { IObjectWillChange, IObjectChange, IObservableObject, isObservableObject } from "./types/observableobject";
-//export { /* 3.0: IValueDidChange, */ IValueWillChange, IObservableValue } from "./types/observablevalue";
 
 //export { IObservableArray, IArrayWillChange, IArrayWillSplice, IArrayChange, IArraySplice, isObservableArray, fastArray } from "./types/observablearray";
 //export { IKeyValueMap, ObservableMap, IMapEntries, IMapEntry, IMapWillChange, IMapChange, isObservableMap, map } from "./types/observablemap"
