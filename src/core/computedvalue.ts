@@ -8,4 +8,5 @@ export class ComputedValue
 } // class ComputedValue
 
 
-export const isComputedValue = createInstanceofPredicate("ComputedValue", ComputedValue);
+export const isComputedValue = 
+  createInstanceofPredicate("ComputedValue", ComputedValue);

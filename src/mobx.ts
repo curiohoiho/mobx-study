@@ -33,61 +33,60 @@ export { IDerivation, untracked, IDerivationState             } from "./core/der
 //export { IListenable                                          } from "./types/listen-utils";
 //export { IObjectWillChange, IObjectChange, IObservableObject, isObservableObject } from "./types/observableobject";
 
-//export { IObservableArray, IArrayWillChange, IArrayWillSplice, IArrayChange, IArraySplice, isObservableArray, fastArray } from "./types/observablearray";
-//export { IKeyValueMap, ObservableMap, IMapEntries, IMapEntry, IMapWillChange, IMapChange, isObservableMap, map } from "./types/observablemap"
+//export { IValueDidChange, IValueWillChange, IObservableValue } from "./types/observablevalue";
+//export { IObservableArray, IArrayWillChange, IArrayWillSplice, IArrayChange, IArraySplice, isObservableArray } from "./types/observablearray";
+//export { IKeyValueMap, ObservableMap, IMapEntries, IMapEntry, IMapWillChange, IMapChange, isObservableMap, map, IObservableMapInitialValues, IMap } from "./types/observablemap"
 
-//export { observable                                           } from "./api/observable";
-//export { computed, IComputedValueOptions                      } from "./api/computeddecorator";
+//export { transaction                                          } from "./api/transaction";
+//export { observable, IObservableFactory, IObservableFactories } from "./api/observable";
+//export { computed, IComputed, IComputedValueOptions           } from "./api/computed";
 //export { isObservable                                         } from "./api/isobservable";
 //export { isComputed                                           } from "./api/iscomputed";
-//export { extendObservable                                     } from "./api/extendobservable";
+//export { extendObservable, , extendShallowObservable          } from "./api/extendobservable";
 //export { observe                                              } from "./api/observe";
 //export { intercept                                            } from "./api/intercept";
-//export { autorun, autorunAsync, autorunUntil, when, reaction  } from "./api/autorun";
-//export { action, isAction, runInAction                        } from "./api/action";
+//export { autorun, autorunAsync, when, reaction, IReactionOptions } from "./api/autorun";
+//export { action, isAction, runInAction, IActionFactory        } from "./api/action";
 
 //export { expr                                                 } from "./api/expr";
-//export { toJSON, toJS                                         } from "./api/tojs";
+//export { toJS                                         		    } from "./api/tojs";
 //export { ITransformer, createTransformer                      } from "./api/createtransformer";
 //export { whyRun                                               } from "./api/whyrun";
 
-export { ILambda                                              } from "./utils/utils";
+export { ILambda, isArrayLike                                 } from "./utils/utils";
 export { Iterator                                             } from "./utils/iterable";
-export { SimpleEventEmitter, ISimpleEventListener             } from "./utils/simpleeventemitter";
 //export { IObserverTree, IDependencyTree                       } from "./api/extras";
 
-//import { resetGlobalState, shareGlobalState, getGlobalState } from "./core/globalstate";
+//import { resetGlobalState, shareGlobalState, getGlobalState   } from "./core/globalstate";
 
 //import { IDepTreeNode } from "./core/observable";
 //import { IObserverTree, IDependencyTree, getDependencyTree, getObserverTree } from "./api/extras";
-//import { getDebugName, getAtom, getAdministration } from "./types/type-utils";
-//import { allowStateChanges } from "./core/action";
-//import { trackTransitions, spyReport, spyReportEnd, spyReportStart, isSpyEnabled } from "./core/spy";
-import { ILambda } from "./utils/utils";
-//import { isComputingDerivation } from "./core/derivation";
+//import { getDebugName, getAtom, getAdministration             } from "./types/type-utils";
+//import { allowStateChanges                                    } from "./core/action";
+//import { spyReport, spyReportEnd, spyReportStart, isSpyEnabled } from "./core/spy";
+import { ILambda                                              } from "./utils/utils";
+//import { isComputingDerivation                                } from "./core/derivation";
+// import { setReactionScheduler, onReactionError               } from "./core/reaction";
 
 //export const extras = {
 //	allowStateChanges,
 //	getAtom,
 //	getDebugName,
 //	getDependencyTree,
+//  getAdministration,
 //	getGlobalState,
 //	getObserverTree,
 //	isComputingDerivation,
 //	isSpyEnabled,
+//  onReactionError,
 //	resetGlobalState,
 //	shareGlobalState,
 //	spyReport,
 //	spyReportEnd,
 //	spyReportStart,
-//	trackTransitions
+//	setReactionScheduler
 //};
 
-// Experimental or internal api's (exposed for testing for example)
-//export const _ = {
-//	getAdministration,
-//	resetGlobalState
-//};
 
 declare var __MOBX_DEVTOOLS_GLOBAL_HOOK__: { injectMobx: ((any) => void)};
 declare var module: { exports: any };
