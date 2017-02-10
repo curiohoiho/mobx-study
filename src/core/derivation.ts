@@ -3,9 +3,12 @@
   IDepTreeNode, 
   addObserver, 
   removeObserver } from './observable';
+import { IAtom } from './atom';
 import { globalState } from './globalstate';
+import { fail } from '../utils/utils';
 import { isComputedValue } from './computedvalue';
-import { invariant } from '../utils/utils';
+import { getMessage } from '../utils/messages';
+
 
 
 export enum IDerivationState

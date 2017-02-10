@@ -1,6 +1,7 @@
 import { IDerivationState, IDerivation } from './derivation';
 import { globalState } from './globalstate';
 import { invariant } from '../utils/utils';
+import { runReactions } from './reaction';
 
 
 // this node is dependent on another node - it's observing other nodes

@@ -10,8 +10,10 @@
  * ===============
  *
  * - api/     Most of the public static methods exposed by the module can be found here.
- * - core/    Implementation of the MobX algorithm; atoms, derivations, reactions, dependency trees, optimizations. Cool stuff can be found here.
- * - types/   All the magic that is need to have observable objects, arrays and values is in this folder. Including the modifiers like `asFlat`.
+ * - core/    Implementation of the MobX algorithm; atoms, derivations, reactions, dependency trees, optimizations. 
+ * 						Cool stuff can be found here.
+ * - types/   All the magic that is need to have observable objects, arrays and values is in this folder. 
+ * 						Including the modifiers like `asFlat`.
  * - utils/   Utility stuff.
  *
  */
@@ -21,9 +23,9 @@ registerGlobals();
 
 //export { IAtom, Atom, BaseAtom                                } from "./core/atom";
 export { IObservable, IDepTreeNode                            } from "./core/observable";
-//export { Reaction, IReactionPublic, IReactionDisposer       } from "./core/reaction";
+//export { Reaction, IReactionPublic, IReactionDisposer         } from "./core/reaction";
 export { IDerivation, untracked, IDerivationState             } from "./core/derivation";
-//export { useStrict, isStrictModeEnabled                       } from "./core/action";
+//export { useStrict, isStrictModeEnabled, IAction              } from "./core/action";
 //export { spy                                                  } from "./core/spy";
 //export { IComputedValue                                       } from "./core/computedvalue";
 
@@ -58,18 +60,19 @@ export { Iterator                                             } from "./utils/it
 //export { IObserverTree, IDependencyTree                       } from "./api/extras";
 
 //import { resetGlobalState, shareGlobalState, getGlobalState   } from "./core/globalstate";
-
+//import { IDerivation } from "./core/derivation";
 //import { IDepTreeNode } from "./core/observable";
 //import { IObserverTree, IDependencyTree, getDependencyTree, getObserverTree } from "./api/extras";
 //import { getDebugName, getAtom, getAdministration             } from "./types/type-utils";
 //import { allowStateChanges                                    } from "./core/action";
 //import { spyReport, spyReportEnd, spyReportStart, isSpyEnabled } from "./core/spy";
-import { ILambda                                              } from "./utils/utils";
+import { ILambda, deepEquals                                  } from "./utils/utils";
 //import { isComputingDerivation                                } from "./core/derivation";
 // import { setReactionScheduler, onReactionError               } from "./core/reaction";
 
 //export const extras = {
 //	allowStateChanges,
+//  deepEquals,
 //	getAtom,
 //	getDebugName,
 //	getDependencyTree,
