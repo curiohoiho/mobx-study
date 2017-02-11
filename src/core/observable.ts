@@ -13,7 +13,7 @@ export interface IDepTreeNode
 } // IDepTreeNode
 
 
-// could itself be observing other observables
+// also, could itself be observing other observables
 export interface IObservable extends IDepTreeNode 
 {
   diffValue: number;
@@ -48,6 +48,7 @@ export interface IObservable extends IDepTreeNode
 export function hasObservers(a_observable: IObservable): boolean
 {
   return a_observable.observers && a_observable.observers.length > 0;
+  
 } // hasObservers()
 
 
