@@ -48,7 +48,7 @@ export interface IObservable extends IDepTreeNode
 export function hasObservers(a_observable: IObservable): boolean
 {
   return a_observable.observers && a_observable.observers.length > 0;
-  
+
 } // hasObservers()
 
 
@@ -67,7 +67,7 @@ export function getObservers(a_observable: IObservable) : IDerivation[]
  * (1) observers held by the observable, and the 
  * (2) indexes of those observers, and then 
  * (3) for each of these indexes, checks that [??] it does not map the
- * derivation__mapid to the index in the list. 
+ *     derivation__mapid to the index in the list. 
  */
 function invariantObservers(a_observable: IObservable) : void
 {
@@ -100,24 +100,24 @@ function invariantObservers(a_observable: IObservable) : void
 } // invariantObservers()
 
 
-export function addObserver(a_observable: IObservable, a_node: IDerivation)
+export function addObserver(a_observable: IObservable, a_observer_node: IDerivation)
 {
   const n_number_of_observers: number = a_observable.observers.length;
   
   // because object assignment is relatively expensive, let's not store data about index 0.
   if (n_number_of_observers) 
   {
-    // observersIndexes is an object, and we get the value of a_node's [__mapid] property, and
+    // observersIndexes is an object, and we get the value of a_observer_node's [__mapid] property, and
     // use the value as a new property on observersIndexes.  Remember, [__mapid] is a string,
-    // so we're accessing observersIndexes{} using the value found in a_node[__mapid] 
-    a_observable.observersIndexes[a_node.__mapid] = n_number_of_observers;
+    // so we're accessing observersIndexes{} using the value found in a_observer_node[__mapid] 
+    a_observable.observersIndexes[a_observer_node.__mapid] = n_number_of_observers;
   }
 
-  a_observable.observers[n_number_of_observers] = a_node;
+  a_observable.observers[n_number_of_observers] = a_observer_node;
 
-  if (a_observable.lowestObserverState > a_node.dependenciesState)
+  if (a_observable.lowestObserverState > a_observer_node.dependenciesState)
   {
-    a_observable.lowestObserverState = a_node.dependenciesState;
+    a_observable.lowestObserverState = a_observer_node.dependenciesState;
   }  
 
 } // addObserver()
