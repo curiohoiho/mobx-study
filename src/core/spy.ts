@@ -1,5 +1,5 @@
 import { globalState } from "./globalstate";
-import { objectAssign, deprecated, once, ILambda } from '../utils/utils';
+import { objectAssign, once, ILambda } from '../utils/utils';
 
 
 export function isSpyEnabled(): boolean
@@ -29,16 +29,15 @@ export function spyReport(a_event: any): boolean | void
 
 export function spyReportStart(a_event): void
 {
-  // take an empty object in the first arg, and add to it all the 
-  // properties and values of the other 2 objects.  
-  const change = objectAssign({ }, a_event, { spyReportStart: true });
-  spyReport(change);
+  // take an empty object in the first arg, and add to it  
+  // all the properties and values of the other 2 objects.  
+  const modified_event = objectAssign({}, a_event, { spyReportStart: true });
+  spyReport(modified_event);
 
 } // spyReportStart()
 
 
 const END_EVENT = { spyReportEnd: true };
-
 
 // TODO: change signature to spyReportEnd(time?: number)
 export function spyReportEnd(a_change?: Object): void
@@ -60,6 +59,8 @@ export function spyReportEnd(a_change?: Object): void
  */
 export function spy(a_fn_listener: (change: any) => void): ILambda
 {
+  globalState.spyListeners.push(a_fn_listener);
+
   // once ensures the passed in function is invoked only one time. 
   // once returns the function with an "invoked" boolean added to it as a closure.
   // When this function is run, it removes itself from the spyListeners.
@@ -71,7 +72,7 @@ export function spy(a_fn_listener: (change: any) => void): ILambda
 
 } // spy()
 
-
+/*
 export function trackTransitions(onReport?: (c: any) => void): Lambda {
 	deprecated("trackTransitions is deprecated. Use mobx.spy instead");
 	if (typeof onReport === "boolean") {
@@ -84,3 +85,4 @@ export function trackTransitions(onReport?: (c: any) => void): Lambda {
 	}
 	return spy(onReport);
 }
+*/
