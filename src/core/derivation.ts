@@ -94,7 +94,7 @@ export function isCaughtException(e): e is CaughtException
  * and stopping on the first change,
  * all recalculations are called only for ComputedValues that will be tracked 
  * anyway by derivation.
- * That is because we assume that if the first x dependencies of derivation
+ * That is because we assume that if the first x dependencies of the derivation
  * do not change, then the derivation should run the same way up until 
  * accessing the x-th dependency. 
  */
@@ -111,10 +111,44 @@ export function shouldCompute(a_derivation: IDerivation): boolean
       // no need for those computeds to be reported, they will be picked up
       // in trackDerivedFunction.
       const prevUntracked = untrackedStart();
-      
+      const lst_observables: IObservable[] = a_derivation.observing;
+      const n_num_observables = lst_observables.length;
+
+      for (let i = 0; i < n_num_observables; i++)
+      {
+        const obj = lst_observables[i]; // grab an observable
+        if (isComputedValue(obj))
+        {
+          try
+          {
+            obj.get();
+          }
+          catch (e)
+          {
+            // not interested in the value or exception at this moment, 
+            // but if there is one, notify all
+            untrackedEnd(prevUntracked);
+            return true;
+          }
+          // if ComputedValue `obj` actually changed, it will be computed and 
+          // propagated to its observers.
+          // and `derivation` is an observer of `obj`
+          if ( (derivation as any).dependenciesState === IDerivationState.STALE)
+          {
+            untrackedEnd(prevUntracked);
+            return true;
+          }
+        } // if isComputedValue()
+
+      } // for :: looping through the lst_observables
+
+      changeDependenciesStateTo0(a_derivation);
+      untrackedEnd(prevUntracked);
+      return false;      
     } // case IDerivationState.POSSIBLY_STALE
 
   } // switch (a_derivation.dependenciesState)
 
 } // shouldCompute()
+
 
