@@ -115,6 +115,7 @@ export function addObserver(a_observable: IObservable, a_observer_node: IDerivat
 
   a_observable.observers[n_number_of_observers] = a_observer_node;
 
+  // for this observable, what is the lowest state of its observers?
   if (a_observable.lowestObserverState > a_observer_node.dependenciesState)
   {
     a_observable.lowestObserverState = a_observer_node.dependenciesState;
@@ -134,6 +135,7 @@ export function removeObserver(a_observable: IObservable, a_node: IDerivation)
     // deleting last observer
     a_observable.observers.length = 0;
 
+    // remove from the global watch variable: globalState.pendingUnObserservations 
     queueForUnobservation(a_observable);
   }
   else // more than 1 observable 
@@ -145,7 +147,7 @@ export function removeObserver(a_observable: IObservable, a_node: IDerivation)
     const map_observers_indexes = a_observable.observersIndexes;
     
     // get last element, which should fill the place of `node`, so the array doesnt have holes
-    const filler = lst_observers.pop();
+    const filler = lst_observers.pop()!;
 
     // otherwise node was the last element, which already got removed from array
     if (filler !== a_node)
@@ -206,8 +208,10 @@ export function startBatch()
  */
 export function endBatch()
 {
-  if (globalState.inBatch === 1)
+  if (--globalState.inBatch === 0)
   {
+    runReactions();
+
     // the batch is actually about to finish, all unobserving should happen here
     const lst_pending_unobservations = globalState.pendingUnObserservations;
 
@@ -228,7 +232,7 @@ export function endBatch()
 
   } // if (globalState.inBatch === 1)
 
-  globalState.inBatch--;
+  // no longer needed with code in "if" above: globalState.inBatch--;
 
 } // endBatch()
 
@@ -254,7 +258,7 @@ export function reportObserved(a_observable: IObservable)
     {
       a_observable.lastAccessedBy = derivation.runId;
       // @todo: so what does it mean to be unbound in this derivation's context?
-      derivation.newObserving[derivation.unboundDepsCount++] = a_observable;
+      derivation.newObserving![derivation.unboundDepsCount++] = a_observable;
     } // inner if 
   }
   else if (a_observable.observers.length === 0)
@@ -302,13 +306,14 @@ function invariantLOS(a_observable: IObservable, a_s_msg: string)
  * Also, most basic use cases should be ok.
  * @todo: create description of autorun behavior or change this behavior?
  * 
- * Called by Atom when it's value changes, 
+ * Called by Atom when its value changes, 
  * go through the list of observers and set their IDerivationState's
  * to STALE: 
  */
 export function propagateChanged(a_observable: IObservable): void
 {
   if (a_observable.lowestObserverState = IDerivationState.STALE) return;
+
   a_observable.lowestObserverState = IDerivationState.STALE;
 
   const lst_observers = a_observable.observers;
@@ -317,12 +322,12 @@ export function propagateChanged(a_observable: IObservable): void
   while (num_of_observers--)
   {
     // get each individual observer, also known as an IDerivation 
-    const d: IDerivation = lst_observers[num_of_observers];
-    if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    const observer: IDerivation = lst_observers[num_of_observers];
+    if (observer.dependenciesState === IDerivationState.UP_TO_DATE)
     {
-      d.onBecomeStale();
+      observer.onBecomeStale();
     }
-    d.dependenciesState = IDerivationState.STALE;
+    observer.dependenciesState = IDerivationState.STALE;
 
   } // while 
 
@@ -330,11 +335,12 @@ export function propagateChanged(a_observable: IObservable): void
 
 
 /**
- * Called by ComputedValue when it recalculates and it's value changed.
+ * Called by ComputedValue when it recalculates and its value changed.
  */
 export function propagateChangeConfirmed(a_observable: IObservable): void
 {
   if (a_observable.lowestObserverState === IDerivationState.STALE) return;
+
   a_observable.lowestObserverState = IDerivationState.STALE;
 
   const lst_observers = a_observable.observers;
@@ -342,16 +348,16 @@ export function propagateChangeConfirmed(a_observable: IObservable): void
 
   while (num_of_observers--)
   {
-    const d: IDerivation = lst_observers[num_of_observers];
+    const observer: IDerivation = lst_observers[num_of_observers];
     // get the observer from the list.  What is its dependenciesState?
     // if POSSIBLY_STALE, then make it STALE.
-    // if UP_TO_DATE, then set the observables lowestObserverState to UP_TO_DATE.
-    if (d.dependenciesState === IDerivationState.POSSIBLY_STALE)
+    // if UP_TO_DATE, then set the observable's lowestObserverState to UP_TO_DATE.
+    if (observer.dependenciesState === IDerivationState.POSSIBLY_STALE)
     {
-      d.dependenciesState = IDerivationState.STALE;
+      observer.dependenciesState = IDerivationState.STALE;
     }
     // this happens during computing of `d`, just keep lowestObserverState up to date.
-    else if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    else if (observer.dependenciesState === IDerivationState.UP_TO_DATE)
     {
       a_observable.lowestObserverState = IDerivationState.UP_TO_DATE;
     } // if..else if 
@@ -378,11 +384,11 @@ export function propagateMaybeChanged(a_observable: IObservable): void
   let num_of_observers = lst_observers.length;
   while (num_of_observers--)
   {
-    const d = lst_observers[num_of_observers];
-    if (d.dependenciesState === IDerivationState.UP_TO_DATE)
+    const observer = lst_observers[num_of_observers];
+    if (observer.dependenciesState === IDerivationState.UP_TO_DATE)
     {
-      d.dependenciesState = IDerivationState.POSSIBLY_STALE;
-      d.onBecomeStale();
+      observer.dependenciesState = IDerivationState.POSSIBLY_STALE;
+      observer.onBecomeStale();
     }
 
   } // while 
