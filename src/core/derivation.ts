@@ -152,3 +152,54 @@ export function shouldCompute(a_derivation: IDerivation): boolean
 } // shouldCompute()
 
 
+export function isComputingDerivation()
+{
+  // filter out actions inside computations
+  return globalState.trackingDerivation !== null;
+}
+
+export function checkIfStateModificationsAreAllowed(a_atom: IAtom)
+{
+  const b_has_observers = a_atom.observers.length > 0;
+
+  // should never be possible to change an observed observable from inside 
+  // computed, see #798
+  if (globalState.computationDepth > 0 && b_has_observers)
+  {
+    fail(getMessage("m031") + a_atom.name);
+  }
+
+  // should not be possible to change observed state outside strict mode, 
+  // except during initialization, see #563
+  if (!globalState.allowStateChanges && b_has_observers)
+  {
+    fail(getMessage(globalState.strictMode ? "m030a" : "m030b") + a_atom.name);
+  }
+
+} // checkIfStateModificationsAreAllowed()
+
+
+/**
+ * Executes the provided function `f` and tracks which observables are being accessed.
+ * The tracking information is stored on the `derivation` object and 
+ * the derivation is registered as an observer of any of the accessed observables.
+ */
+export function trackDerivedFunction<T>(
+  a_derivation: IDerivation, 
+  f: () => T,
+  context: any)
+{
+  // pre-allocate array allocation + room for variation in deps 
+  // array will be trimmed by bindDependencies
+  changeDependenciesStateTo0(a_derivation);
+  a_derivation.newObserving = new Array(a_derivation.observing.length + 100);
+  a_derivation.unboundDepsCount = 0;
+  a_derivation.runId = ++globalState.runId;
+  const prevTracking = globalState.trackingDerivation;
+  
+
+} // trackDerivedFunction()
+
+
+
+

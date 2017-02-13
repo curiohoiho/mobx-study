@@ -1,4 +1,5 @@
 import { IObservable } from './observable';
+
 export interface IAtom extends IObservable
 {
   /**
