@@ -187,7 +187,7 @@ export function checkIfStateModificationsAreAllowed(a_atom: IAtom)
 export function trackDerivedFunction<T>(
   a_derivation: IDerivation, 
   f: () => T,
-  context: any)
+  a_context: any)
 {
   // pre-allocate array allocation + room for variation in deps 
   // array will be trimmed by bindDependencies
@@ -196,9 +196,96 @@ export function trackDerivedFunction<T>(
   a_derivation.unboundDepsCount = 0;
   a_derivation.runId = ++globalState.runId;
   const prevTracking = globalState.trackingDerivation;
-  
+
+  let result: any;
+  try 
+  {
+    result = f.call(a_context)
+  }
+  catch (e)
+  {
+    result = new CaughtException(e);
+  }
+
+  globalState.trackingDerivation = prevTracking;
+  bindDependencies(a_derivation);
+  return result;
 
 } // trackDerivedFunction()
+
+
+/**
+ * Diffs newObserving with observing.
+ * Update observing to be newObserving with unique observables.
+ * Notify observers that become observed/unobserved.
+ */
+function bindDependencies(a_derivation: IDerivation)
+{
+  const prevObserving = a_derivation.observing;
+  const lst_observing = a_derivation.observing = a_derivation.newObserving!;
+
+  // newObserving shouldn't be needed outside tracking 
+  a_derivation.newObserving = null;
+
+  /**
+   * Go through all new observables and check diffValue:
+   * (this list can contain duplicates):
+   *    0: first occurrence, change to 1 and keep it 
+   *    1: extra occurrence, drop it 
+   */
+  let n_i0 = 0;
+  let n_unbound_deps = a_derivation.unboundDepsCount;
+
+  for (let i = 0; i < n_unbound_deps; i++)
+  {
+    const dep = lst_observing[i];
+    if (dep.diffValue === 0)
+    {
+      dep.diffValue = 1;
+      // [??] why this if check ??
+      if (n_i0 !== i) lst_observing[n_i0] = dep;
+      n_i0++;
+    }
+
+  } // for
+
+  lst_observing.length = n_i0;
+
+  /**
+   * Go though all old observables and check diffValue:
+   * (it is unique after last bindDependencies)
+   *    0: it's not in new observables, unobserve it 
+   *    1: it keeps being observed, don't want to notify it. change to 0.
+   */
+  n_unbound_deps = prevObserving.length;
+  while (n_unbound_deps--)
+  {
+    const dep = prevObserving[n_unbound_deps];
+    if (dep.diffValue === 0)
+    {
+      removeObserver(dep, a_derivation);
+    }
+    dep.diffValue = 0;
+  } // while
+
+  /**
+   * Go through all new observables and check diffValue: (now it should be unique)
+   *    0: it was set to 0 in last loop. don't need to do anything.
+   *    1: it wasn't observed. let's observe it. set back to 0.
+   */
+  while (n_i0--)
+  {
+    const dep = lst_observing[n_i0];
+    if (dep.diffValue === 1)
+    {
+      dep.diffValue = 0;
+      addObserver(dep, a_derivation);
+    } // if
+
+  } // while 
+
+} // bindDependencies()
+
 
 
 
