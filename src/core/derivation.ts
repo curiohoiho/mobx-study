@@ -287,6 +287,68 @@ function bindDependencies(a_derivation: IDerivation)
 } // bindDependencies()
 
 
+export function clearObserving(a_derivation: IDerivation)
+{
+  const lst_observables = a_derivation.observing;
+  let n_num_observables = lst_observables.length;
+
+  while (n_num_observables--)
+  {
+    removeObserver(lst_observables[n_num_observables], a_derivation);
+  }
+
+  a_derivation.dependenciesState = IDerivationState.NOT_TRACKING;
+  lst_observables.length = 0;
+
+} // clearObserving()
+
+export function untracked<T>(a_action: () => T): T 
+{
+  const prev = untrackedStart();
+  const res = a_action();
+  untrackedEnd(prev);
+  return res;
+
+} // untracked()
+
+
+export function untrackedStart(): IDerivation | null
+{
+  const prev = globalState.trackingDerivation;
+  globalState.trackingDerivation = null;
+  return prev;
+
+} // untrackedStart()
+
+export function untrackedEnd(a_prev: IDerivation | null)
+{
+  globalState.trackingDerivation = a_prev;
+
+} // untrackedEnd()
+
+
+/**
+ * needed to keep `lowestObserverState` correct. when changing from (2 or 1) to 0
+ *
+ */
+export function changeDependenciesStateTo0(a_derivation: IDerivation)
+{
+  if (a_derivation.dependenciesState === IDerivationState.UP_TO_DATE) return;
+  a_derivation.dependenciesState = IDerivationState.UP_TO_DATE;
+
+  const lst_observables = a_derivation.observing;
+  let n_num_observables = lst_observables.length;
+  while (n_num_observables--)  
+  {
+    lst_observables[n_num_observables].lowestObserverState = IDerivationState.UP_TO_DATE;
+  }
+
+} // changeDependenciesStateTo0()
+
+
+
+
+
 
 
 
