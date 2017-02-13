@@ -133,7 +133,7 @@ export function shouldCompute(a_derivation: IDerivation): boolean
           // if ComputedValue `obj` actually changed, it will be computed and 
           // propagated to its observers.
           // and `derivation` is an observer of `obj`
-          if ( (derivation as any).dependenciesState === IDerivationState.STALE)
+          if ( (a_derivation as any).dependenciesState === IDerivationState.STALE)
           {
             untrackedEnd(prevUntracked);
             return true;
