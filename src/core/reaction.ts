@@ -206,17 +206,146 @@ export class Reaction implements IDerivation, IReactionPublic
   } // track()
 
 
-  reportExceptionInDerivation(error: any)
+  reportExceptionInDerivation(a_error: any)
   {
-    
+    if (this.errorHandler)
+    {
+      this.errorHandler(a_error, this);
+      return;
+    }
+
+    const message = `[mobx] Encountered an uncaught exception that was thrown by a reaction or observer component, in: '${this}`;
+		const messageToUser = getMessage("m037");
+
+		console.error(message || messageToUser /* latter will not be true, make sure uglify doesn't remove */, a_error);
+			/** If debugging brough you here, please, read the above message :-). Tnx! */
+
+    if (isSpyEnabled())
+    {
+      spyReport({
+        type: "error",
+        message: message,
+        error: a_error,
+        object: this
+      }); 
+    } // if
+
+    globalState.globalReactionErrorHandlers.forEach(f => f(a_error, this));
 
   } // reportExceptionInDerivation()
 
+  dispose()
+  {
+    if (!this.isDisposed)
+    {
+      this.isDisposed = true;
+      if (!this._isRunning)
+      {
+        startBatch();
+        // if disposed while running, clean up later. Maybe not optimal, but rare case
+        clearObserving(this);
+        endBatch();
+      } // inner if 
+    } // outer if 
+  } // dispose()
+
+
+  getDisposer(): IReactionDisposer
+  {
+    const r = this.dispose.bind(this);
+    r.$mobx = this;
+    r.onError = registerErrorHandler;
+    return r;
+  } // getDisposer()
+
+  
+  toString()
+  {
+    return `Reaction[${this.name}]`;
+  }
+
+
+  whyRun() {
+		const observing = unique(this._isRunning ? this.newObserving : this.observing).map(dep => dep.name);
+
+		return (`
+    WhyRun? reaction '${this.name}':
+    * Status: [${this.isDisposed ? "stopped" : this._isRunning ? "running" : this.isScheduled() ? "scheduled" : "idle"}]
+    * This reaction will re-run if any of the following observables changes:
+    ${joinStrings(observing)}
+    ${(this._isRunning) ? " (... or any observable accessed during the remainder of the current run)" : ""}
+	${getMessage("m038")}
+`
+		);
+	} // whyRun()
 
 } // class Reaction
 
 
+function registerErrorHandler(handler)
+{
+  invariant(this && this.$mobx && isReaction(this.$mobx), "Invalid `this`");
+	invariant(!this.$mobx.errorHandler, "Only one onErrorHandler can be registered");
+	this.$mobx.errorHandler = handler;
 
+} // registerErrorHandler()
+
+
+export function onReactionError(handler: (error: any, derivation: IDerivation) => void): () => void {
+	globalState.globalReactionErrorHandlers.push(handler);
+	return () => {
+		const idx = globalState.globalReactionErrorHandlers.indexOf(handler);
+		if (idx >= 0)
+			globalState.globalReactionErrorHandlers.splice(idx, 1);
+	};
+}
+
+
+/**
+ * Magic number alert!
+ * Defines within how many times a reaction is allowed to re-trigger itself
+ * until it is assumed that this is gonna be a never ending loop...
+ */
+const MAX_REACTION_ITERATIONS = 100;
+
+let reactionScheduler: (fn: () => void) => void = f => f();
+
+export function runReactions() {
+	// Trampolining, if runReactions are already running, new reactions will be picked up
+	if (globalState.inBatch > 0 || globalState.isRunningReactions)
+		return;
+	reactionScheduler(runReactionsHelper);
+}
+
+
+function runReactionsHelper() {
+	globalState.isRunningReactions = true;
+	const allReactions = globalState.pendingReactions;
+	let iterations = 0;
+
+	// While running reactions, new reactions might be triggered.
+	// Hence we work with two variables and check whether
+	// we converge to no remaining reactions after a while.
+	while (allReactions.length > 0) {
+		if (++iterations === MAX_REACTION_ITERATIONS) {
+			console.error(`Reaction doesn't converge to a stable state after ${MAX_REACTION_ITERATIONS} iterations.`
+				+ ` Probably there is a cycle in the reactive function: ${allReactions[0]}`);
+			allReactions.splice(0); // clear reactions
+		}
+		let remainingReactions = allReactions.splice(0);
+		for (let i = 0, l = remainingReactions.length; i < l; i++)
+			remainingReactions[i].runReaction();
+	}
+	globalState.isRunningReactions = false;
+}
+
+
+export const isReaction = createInstanceofPredicate("Reaction", Reaction);
+
+export function setReactionScheduler(fn: (f: () => void) => void) {
+	const baseScheduler = reactionScheduler;
+	reactionScheduler = f => fn(() => baseScheduler(f));
+}
 
 
 
