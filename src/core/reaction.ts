@@ -67,6 +67,155 @@ import { getMessage } from '../utils/messages';
  *  to produce the things you need in your side effect.
  */
 
+export interface IReactionPublic
+{
+  dispose: IReactionDisposer;
+}
+
+export interface IReactionDisposer
+{
+  (): void;
+  $mobx?: Reaction;
+  onError?(handler: (error: any, derivation: IDerivation) => void);
+
+} // IReactionDisposer
+
+
+export class Reaction implements IDerivation, IReactionPublic
+{
+  // nodes we are looking at. Our value depends on these nodes
+  observing: IObservable[] = [];
+  newObserving: IObservable[] = [];
+  dependenciesState = IDerivationState.NOT_TRACKING;
+  diffValue = 0;
+  runId = 0;
+  unboundDepsCount = 0;
+  __mapid = "#" + getNextId();
+  isDisposed = false;
+  _isScheduled = false;
+  _isTrackPending = false;
+  _isRunning = false;
+  errorHandler: (error: any, derivation: IDerivation) => void;
+
+  constructor(
+    public name: string = "Reaction@" + getNextId(), 
+    private onInvalidate: () => void
+  )
+  { }
+
+
+  onBecomeStale() 
+  {
+    this.schedule();
+  }
+
+  schedule()
+  {
+    if (!this._isScheduled)
+    {
+      this._isScheduled = true;
+      globalState.pendingReactions.push(this);
+      runReactions();
+    } // if 
+  } // schedule()
+
+
+  isScheduled()
+  {
+    return this._isScheduled;
+  }
+
+
+  /**
+	 * internal, use schedule() if you intend to kick off a reaction
+	 */
+  private f_runReaction()
+  {
+    if (!this.isDisposed)
+    {
+      startBatch();
+      this._isScheduled = false;  // [why] ok, so how did we know that this needed setting here [??],
+                                  // and who else references this boolean, and when?
+      if (shouldCompute(this))
+      {
+        this._isTrackPending = true; // [why] ok, so how did we know that this needed setting here [??], and
+                                     // who else in this call stack references this boolean, and when?
+                                     // would F# unions and "making impossible states impossible"
+                                     // help here?
+        this.onInvalidate(); // [why] how do i know to call this??
+
+        if (this._isTrackPending && isSpyEnabled())
+        {
+          // onInvalidate didn't trigger track right away
+          spyReport({
+            object: this,
+            type: "scheduled-reaction"
+          });
+        } // 2nd inner if 
+      } // 1st inner if, shouldCompute()
+
+      endBatch();
+
+    } // outer if (!this.isDisposed)
+
+  } // f_runReaction()
+
+
+  track(a_fn: () => void)
+  {
+    startBatch();
+
+    const b_notify = isSpyEnabled();
+    let startTime;
+
+    if (b_notify)
+    {
+      startTime = Date.now();
+      spyReportStart({
+        object: this,
+        type: "reaction",
+        a_fn
+      });
+    } // if (b_notify)
+
+    this._isRunning = true;
+    const result = trackDerivedFunction(this, a_fn, undefined);
+    this._isRunning = false;
+    this._isTrackPending = false; // [why] magic bools, why are they here in this exact spot [??]
+
+    if (this.isDisposed)
+    {
+      // disposed during last run. Clean up everything that was bound after the dispose call.
+      clearObserving(this);
+    }
+
+    if (isCaughtException(result))
+    {
+      this.reportExceptionInDerivation(result.cause);
+    }
+
+    if (b_notify) 
+    {
+      spyReportEnd({
+        time: Date.now() - startTime
+      });
+    }
+
+    endBatch();
+
+  } // track()
+
+
+  reportExceptionInDerivation(error: any)
+  {
+    
+
+  } // reportExceptionInDerivation()
+
+
+} // class Reaction
+
+
 
 
 

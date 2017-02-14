@@ -194,6 +194,7 @@ export function queueForUnobservation(a_observable: IObservable)
  * when nothing else does.
  * During a batch, `onBecomeUnobserved` will be called at most once per observable.
  * Avoids unnecessary recalculations. 
+ * Code simply increments `globalState.inBatch++`.
  */
 export function startBatch()
 {
