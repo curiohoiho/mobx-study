@@ -43,10 +43,92 @@ export class BaseAtom implements IAtom {
 	 * Create a new atom. For debugging purposes it is recommended to give it a name.
 	 * The onBecomeObserved and onBecomeUnobserved callbacks can be used for resource management.
 	 */
-  
+  constructor(public name = "Atom@" + getNextId()) 
+  {
 
+  }
+
+  public onBecomeUnobserved()
+  {
+    // noop 
+  }
+
+  /**
+	 * Invoke this method to notify mobx that your atom has been used somehow.
+	 */
+  public reportObserved()
+  {
+    reportObserved(this);
+  }
+
+  /**
+	 * Invoke this method _after_ this method has changed to signal mobx 
+   * that all its observers should invalidate.
+   * [why] in f#/idris, could force via types this rule 
+	 */
+  public reportChanged() 
+  {
+    startBatch();
+    propagateChanged(this);
+    endBatch();
+  }
+
+  toString()
+  {
+    return this.name;
+  }
 
 } // class BaseAtom
+
+
+export class Atom extends BaseAtom implements IAtom 
+{
+
+  isPendingUnobservation = false; // for effective unobserving 
+  public isBeingTracked = false;
+
+  /**
+	 * Create a new atom. For debugging purposes it is recommended to give it a name.
+	 * The onBecomeObserved and onBecomeUnobserved callbacks can be used for resource management.
+	 */
+
+   constructor(
+     public name = "Atom@" + getNextId(),
+     public onBecomeObservedHandler: () => void = noop,
+     public onBecomeUnobservedHandler: () => void = noop)
+  {
+    super(name);    
+  }
+
+  public reportObserved(): boolean
+  {
+    startBatch();
+
+    super.reportObserved();
+
+    if (!this.isBeingTracked)
+    {
+      this.isBeingTracked = true;
+      this.onBecomeObservedHandler();
+    }
+
+    endBatch();
+
+    return !!globalState.trackingDerivation;
+    // return doesn't really give usefull info, because it can be as well calling 
+    // computed which calls atom (no reactions)
+		// also it could not trigger when calculating reaction dependent on Atom 
+    // because Atom's value was cached by computed called by given reaction.
+
+  } // reportObserved()
+
+  public onBecomeUnobserved() 
+  {
+    this.isBeingTracked = false;
+    this.onBecomeObservedHandler();
+  } // onBecomeUnobserved()
+
+} // class Atom 
 
 
 export const isAtom = createInstanceofPredicate("Atom", BaseAtom);
