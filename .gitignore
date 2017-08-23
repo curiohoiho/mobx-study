@@ -6,9 +6,13 @@ coverage
 notes.md
 lib
 test/babel-tests.js
-test/typescript-tests.js*
+test/typescript/typescript-tests.js
+test/perf/perf.txt
 .vscode
 dist/
-.build/
-yarn.lock
+.build*/
 .idea
+.wp-build*/
+*.iml
+*.ipr
+*.iws
